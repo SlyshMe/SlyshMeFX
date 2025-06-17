@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "enables the default permissions",
+  "windows": [
+    "main",
+    "settings",
+    "wallpaper:default"
+  ],
+  "permissions": [
+    "core:default",
+    "core:window:allow-maximize",
+    "wallpaper:default",
+    "core:app:allow-version"
+  ]
+}
