@@ -20,25 +20,25 @@
         resolution: 128,
     });
     listen(`visualiserUpdate`, (e: Event<String>) => settings = JSON.parse(e.payload.toString()));
-
+    
     invoke(`getConfigs`).then((e) => {
         const configs = e as Configs;
         settings = configs[1];
     });
-
+    
     $effect(() => {
         colour = `#${settings.barsColour[0].toString(16).padStart(2, `0`)}${settings.barsColour[1].toString(16).padStart(2, `0`)}${settings.barsColour[2].toString(16).padStart(2, `0`)}${settings.barsColour[3].toString(16).padStart(2, `0`)}`;
     });
     
     // Attach as 'moving wallpaper'
     wallpaper.attach();
-
+    
     const prepCanvas = (canvas: HTMLCanvasElement) => {
         // Set resolution based on size
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
     };
-
+    
     const drawImage = (ctx: CanvasRenderingContext2D, image: HTMLImageElement) => {
         const canvas = ctx.canvas;
         const imgWidth = image.naturalWidth;
@@ -116,7 +116,7 @@
 
         // need to make sure the previous capture stops when this is called
         invoke(`startCapture`).then(() => console.log(`started capture`)).catch(() => console.log(`failed to start capture`))
-    });
+    }).catch((e) => console.log(e) ?? console.log(e?.stack));
 
 </script>
 
@@ -136,7 +136,7 @@
 
         overflow: hidden;
 
-        background-color: #111;
+        background-color: #1110;
     }
 
     img {

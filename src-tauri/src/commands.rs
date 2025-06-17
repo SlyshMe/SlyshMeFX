@@ -16,18 +16,26 @@ pub fn close(appHandle: AppHandle, restart: bool) {
 }
 
 #[tauri::command]
-pub fn getConfigs() -> Result<(EqualiserSettings, VisualiserSettings), ()> {
+pub fn getConfigs() -> Result<(EqualiserSettings, VisualiserSettings), String> {
     Ok((*crate::EQUALISER_CONFIG.read().unwrap(), *crate::VISUALISER_CONFIG.read().unwrap()))
 }
 
 #[tauri::command]
-pub async fn getWallpaper() -> Result<Vec<u8>, ()> {
+pub async fn getWallpaper() -> Result<Vec<u8>, String> {
     match wallpaper::get() {
-        Ok(path) => {
-            let buffer = fs::read(&path).map_err(|_| ())?;
-            Ok(buffer)
+        Ok(w) => {
+            match fs::read(&w) {
+                Ok(buffer) => {
+                    Ok(buffer)
+                },
+                Err(e) => {
+                    Err(e.to_string())
+                }
+            }
+        },
+        Err(e) => {
+            Err(e.to_string())
         }
-        Err(_) => Err(()),
     }
 }
 

@@ -13,8 +13,10 @@
       {
         "title": "SlyshMe FX",
         "label": "main",
-        "resizable": true,
-        "fullscreen": true
+        "fullscreen": true,
+        "transparent": true,
+        "decorations": false,
+        "shadow": false
       },
       {
         "title": "SlyshMe FX - Settings",

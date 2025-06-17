@@ -52,7 +52,7 @@
         const url = URL.createObjectURL(blob);
 
         src = url;
-    });
+    }).catch(console.log);
 
     $effect(() => {
         invoke(`setEqualiserSettings`, {
