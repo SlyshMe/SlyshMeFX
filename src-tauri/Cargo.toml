@@ -1,17 +1,14 @@
 [package]
-name = "app"
+name = "SlyshMeFX"
 version = "0.2.1"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
-edition = "2021"
-rust-version = "1.70"
+description = "SlyshMeFX is a system-wide audio visualiser and equaliser."
+authors = ["VioPaige"]
+license = "GPLv3"
+repository = "https://github.com/SlyshMe/SlyshMeFX"
+edition = "2024"
+rust-version = "1.85"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[profile.release]
-debug = true
 
 [lib]
 name = "app_lib"
@@ -30,4 +27,3 @@ wallpaper = "3.2.0"
 audioviz = "0.6.0"
 wasapi = "0.15.0"
 fast-math = "0.1.1"
-# windows = { version = "0.61.3", features = ["Win32", "Win32_System_Registry", "Win32_Security", "Win32_Media", "Win32_Media_Audio", "Win32_Media_Audio_Apo", "IAudioSystemEffects"] }
