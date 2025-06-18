@@ -2,7 +2,7 @@ use tauri::Manager;
 
 
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Copy)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct AppConfig {
     pub visualiserSettings: VisualiserSettings,
     pub equaliserSettings: EqualiserSettings,
@@ -16,7 +16,7 @@ impl Default for AppConfig {
     }
 }
 impl AppConfig {
-    pub fn save(&self, app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn save(&self, app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
         let configDir = app.path().app_local_data_dir()?;
         let configPath = configDir.join("config.json");
         let _ = std::fs::create_dir_all(&configDir);
@@ -94,11 +94,18 @@ pub struct FrequencyInterval {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Copy)]
+pub struct Vector2 {
+    pub x: f32,
+    pub y: f32,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct VisualiserSettings {
     pub barsColour: (u8, u8, u8, u8), // rgba, 0-255
     pub visualiserType: VisualiserType,
     pub useDesktopBackground: bool,
     pub resolution: u16,
+    pub screen: Option<String>,
 }
 impl Default for VisualiserSettings {
     fn default() -> Self {
@@ -107,6 +114,7 @@ impl Default for VisualiserSettings {
             visualiserType: VisualiserType::Linear1,
             useDesktopBackground: true,
             resolution: 128,
+            screen: None,
         }
     }
 }

@@ -21,6 +21,7 @@ export interface VisualiserSettings {
     visualiserType: VisualiserType;
     useDesktopBackground: boolean;
     resolution: number;
+    screen: string | undefined;
 }
 
 export type EqualiserSettings = [EqualiserChannelSettings, EqualiserChannelSettings];

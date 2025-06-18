@@ -23,12 +23,10 @@ pub fn run() {
         .setup(|app| {
             // Config loading
             let config = AppConfig::load(app.handle()).unwrap_or_default();
-            *VISUALISER_CONFIG.write().unwrap() = config.visualiserSettings;
+            *VISUALISER_CONFIG.write().unwrap() = config.visualiserSettings.clone();
             *EQUALISER_CONFIG.write().unwrap() = config.equaliserSettings;
             
             app.handle().emit("visualiserUpdate", serde_json::to_string(&config.visualiserSettings).unwrap()).unwrap();
-
-
 
             // Tray icon
             TrayIconBuilder::new()
@@ -88,6 +86,8 @@ pub fn run() {
             setVisualiserSettings,
             hideSettingsUi,
             close,
+            setMonitor,
+            getMonitors,
         ])
         .run(tauri::generate_context!())
         .expect("error while running application...");

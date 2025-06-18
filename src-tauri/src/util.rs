@@ -31,6 +31,10 @@ pub fn makeDistribution(data: &[Frequency], resolution: usize) -> Vec<FrequencyI
                 }
             }
 
+            for _ in 0..resolution - v.len() {
+                v.push(vec![]);
+            }
+
             v.iter()
                 .enumerate()
                 .map(|(i, interval)| FrequencyInterval {

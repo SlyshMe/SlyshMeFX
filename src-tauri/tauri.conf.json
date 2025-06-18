@@ -21,8 +21,8 @@
       {
         "title": "SlyshMe FX - Settings",
         "label": "settings",
-        "width": 200,
-        "height": 550,
+        "width": 225,
+        "height": 590,
         "visible": false,
         "decorations": false,
         "transparent": true,

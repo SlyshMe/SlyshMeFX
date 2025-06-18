@@ -18,6 +18,7 @@
         visualiserType: `Linear1`,
         useDesktopBackground: true,
         resolution: 128,
+        screen: undefined,
     });
     listen(`visualiserUpdate`, (e: Event<String>) => settings = JSON.parse(e.payload.toString()));
     
@@ -32,6 +33,16 @@
     
     // Attach as 'moving wallpaper'
     wallpaper.attach();
+    listen(`startScreenChange`, (e: Event<string | null>) => {
+        if (!e.payload) return;
+
+        wallpaper.detach();
+
+        // console.log(`setting monitor to ${e.payload}`)
+        invoke(`setMonitor`, { monitorName: e.payload }).then(() => {
+            wallpaper.attach();
+        }).catch(console.log);
+    });
     
     const prepCanvas = (canvas: HTMLCanvasElement) => {
         // Set resolution based on size

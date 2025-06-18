@@ -1,5 +1,5 @@
 use std::{fs, process::Command, sync::atomic::Ordering, thread};
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter, Manager, Position, Size};
 
 use crate::structs::{AppConfig, EqualiserSettings, VisualiserSettings};
 use super::util::audioCapture;
@@ -17,7 +17,13 @@ pub fn close(appHandle: AppHandle, restart: bool) {
 
 #[tauri::command]
 pub fn getConfigs() -> Result<(EqualiserSettings, VisualiserSettings), String> {
-    Ok((*crate::EQUALISER_CONFIG.read().unwrap(), *crate::VISUALISER_CONFIG.read().unwrap()))
+    Ok((*crate::EQUALISER_CONFIG.read().unwrap(), crate::VISUALISER_CONFIG.read().unwrap().clone()))
+}
+
+#[tauri::command]
+pub fn getMonitors(appHandle: AppHandle) -> Result<String, String> {
+    let monitors = appHandle.available_monitors().expect("Failed to retrieve available monitors.");
+    Ok(serde_json::to_string(&monitors).expect("Failed to serialise available monitors."))
 }
 
 #[tauri::command]
@@ -61,9 +67,26 @@ pub fn setEqualiserSettings(appHandle: AppHandle, newSettings: String) -> Result
     
     *crate::EQUALISER_CONFIG.write().unwrap() = settings;
     AppConfig {
-        visualiserSettings: *crate::VISUALISER_CONFIG.read().unwrap(),
+        visualiserSettings: crate::VISUALISER_CONFIG.read().unwrap().clone(),
         equaliserSettings: settings,
-    }.save(appHandle).unwrap();
+    }.save(&appHandle).unwrap();
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn setMonitor(appHandle: AppHandle, monitorName: String) -> Result<(), String> {
+    let monitors = appHandle.available_monitors().expect("Failed to retrieve available monitors.");
+    
+    if let Some(monitor) = monitors.iter().find(|m| *m.name().unwrap_or(&"".to_string()) == monitorName) {
+        let mainWindow = appHandle.get_webview_window("main").unwrap();
+        mainWindow.set_position(Position::Physical(*monitor.position())).expect("Failed to set window position.");
+        mainWindow.set_size(Size::Physical(*monitor.size())).expect("Failed to set window size");
+
+        println!("Position is now: {:?}, Size: {:?}", mainWindow.outer_position(), mainWindow.outer_size());
+    } else {
+        return Err("Monitor not found".into());
+    }
 
     Ok(())
 }
@@ -88,13 +111,19 @@ pub fn setupEqualiser(appHandle: AppHandle) -> Result<(), ()> {
 #[tauri::command]
 pub fn setVisualiserSettings(appHandle: AppHandle, newSettings: String) -> Result<(), ()> {
     let settings: VisualiserSettings = serde_json::from_str(&newSettings).unwrap();
-    *crate::VISUALISER_CONFIG.write().unwrap() = settings;
+    let lastMonitor = crate::VISUALISER_CONFIG.read().unwrap().screen.clone();
+
+    *crate::VISUALISER_CONFIG.write().unwrap() = settings.clone();
 
     appHandle.emit("visualiserUpdate", newSettings).unwrap();
     AppConfig {
-        visualiserSettings: settings,
+        visualiserSettings: settings.clone(),
         equaliserSettings: *crate::EQUALISER_CONFIG.read().unwrap(),
-    }.save(appHandle).unwrap();
+    }.save(&appHandle).unwrap();
+
+    if lastMonitor != settings.screen {
+        appHandle.emit("startScreenChange", settings.screen).unwrap();
+    }
 
     Ok(())
 }

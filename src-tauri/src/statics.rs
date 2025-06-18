@@ -31,4 +31,5 @@ pub static VISUALISER_CONFIG: RwLock<VisualiserSettings> = RwLock::new(Visualise
     visualiserType: VisualiserType::Linear1,
     useDesktopBackground: true,
     resolution: 128,
+    screen: None,
 });

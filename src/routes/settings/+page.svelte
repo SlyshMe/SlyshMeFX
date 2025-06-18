@@ -1,6 +1,7 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
     import { getVersion } from "@tauri-apps/api/app";
+    import { type Monitor } from "@tauri-apps/api/window";
     
     import * as Command from "$lib/components/ui/command";
     import { Slider } from "$lib/components/ui/slider";
@@ -17,6 +18,7 @@
         visualiserType: `Linear1`,
         useDesktopBackground: true,
         resolution: 128,
+        screen: undefined,
     });
     let equaliserSettings: EqualiserSettings = $state([
         {
@@ -46,7 +48,7 @@
         equaliserSettings = configs[0];
         visualiserSettings = configs[1];
     });
-    invoke("getWallpaper").then((v) => {
+    invoke(`getWallpaper`).then((v) => {
         const data = new Uint8Array(v as Array<number>);
         const blob = new Blob([data], { type: "image/png" });
         const url = URL.createObjectURL(blob);
@@ -103,11 +105,12 @@
     let hovers = {
         wrapper: true,
         select: false,
+        select2: false,
     };
-    const toggleHovers = (hoverType: `wrapper` | `select`, value: boolean) => {
+    const toggleHovers = (hoverType: `wrapper` | `select` | `select2`, value: boolean) => {
         hovers[hoverType] = value;
 
-        if (!hovers.wrapper && !hovers.select) setTimeout(() => !hovers.wrapper && !hovers.select ? invoke(`hideSettingsUi`) : null, 250);
+        if (!hovers.wrapper && !hovers.select && !hovers.select2) setTimeout(() => !hovers.wrapper && !hovers.select ? invoke(`hideSettingsUi`) : null, 250);
     };
 </script>
 
@@ -150,13 +153,39 @@
                                 bind:value={visualiserSettings.visualiserType}
                                 onOpenChange={(open) => toggleHovers(`select`, open)}
                             >
-                                <Select.Trigger class="w-[180px]">
+                                <Select.Trigger>
                                     {visualiserSettings.visualiserType}
                                 </Select.Trigger>
-                                <Select.Content>
+                                <Select.Content class="max-w-fit">
                                     <Select.Item value="Linear1">Linear 1</Select.Item>
                                     <Select.Item value="Linear2">Linear 2</Select.Item>
                                     <Select.Item value="Log">Logarithmic</Select.Item>
+                                </Select.Content>
+                            </Select.Root>
+                        </Command.Item>
+                        <Command.Item class="flex justify-between">
+                            Screen:
+                            <Select.Root 
+                                type="single"
+                                bind:value={visualiserSettings.screen}
+                                onOpenChange={(open) => toggleHovers(`select2`, open)}
+                            >
+                                <Select.Trigger>
+                                    {visualiserSettings.screen ?? `Automatic`}
+                                </Select.Trigger>
+                                <Select.Content>
+                                    {#await invoke(`getMonitors`) then m}
+                                        {@const monitors = JSON.parse(m as string) as Monitor[]}
+                                        {#each monitors as monitor}
+                                            <Select.Item value={monitor.name ?? "\\\\.\\DISPLAY1"}>
+                                                {monitor.name?.replace(`\\\\.\\`, ``)}
+                                            </Select.Item>
+                                        {/each}
+                                    {:catch}
+                                        <Select.Item disabled={true} value={""}>
+                                            No monitors found.
+                                        </Select.Item>
+                                    {/await}
                                 </Select.Content>
                             </Select.Root>
                         </Command.Item>
