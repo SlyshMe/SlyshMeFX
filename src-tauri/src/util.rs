@@ -39,7 +39,11 @@ pub fn makeDistribution(data: &[Frequency], resolution: usize) -> Vec<FrequencyI
                 .enumerate()
                 .map(|(i, interval)| FrequencyInterval {
                     index: i as u16,
-                    volume: interval.iter().sum::<f32>() / interval.len() as f32,
+                    volume: if interval.is_empty() {
+                        0.0
+                    } else {
+                        interval.iter().sum::<f32>() / interval.len() as f32
+                    },
                 })
                 .collect()
         },
@@ -78,7 +82,8 @@ pub fn makeDistribution(data: &[Frequency], resolution: usize) -> Vec<FrequencyI
         VisualiserType::Log => {
             let mut intervals = vec![FrequencyInterval { index: 0, volume: 0. }; resolution];
 
-            let min = log2(20.);
+            // the min frequency is experimented with a bit and (partially) prevents the left side of the visualiser from simply being completely flat
+            let min = log2(75.);
             let max = log2(20_000.);
             let range = max - min;
 
@@ -166,7 +171,6 @@ pub fn audioCapture(appHandle: AppHandle) -> Result<(), Box<dyn std::error::Erro
 
             if freqs.len() > 0 {
                 let magnitudes: Vec<String> = makeDistribution(&freqs[0], crate::VISUALISER_CONFIG.read().unwrap().resolution.into())
-                // let magnitudes: Vec<String> = makeDistribution(&freqs[0], 128)
                     .iter()
                     .map(|f| format!(r#"{{ "index": {}, "volume": {} }}"#, f.index, f.volume))
                     .collect();

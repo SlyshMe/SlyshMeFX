@@ -4,6 +4,7 @@ use crate::structs::{EqualiserChannelSettings, EqualiserSettings, VisualiserSett
 
 
 pub static IS_CAPTURE_RUNNING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+pub static IS_ATTACHED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 pub static EQUALISER_CONFIG: RwLock<EqualiserSettings> = RwLock::new(EqualiserSettings(
     EqualiserChannelSettings {

@@ -1,6 +1,6 @@
 {
   "productName": "SlyshMeFX",
-  "version": "0.1.0",
+  "version": "0.2.4",
   "identifier": "slyshmefx.pvdev.xyz",
   "build": {
     "frontendDist": "../build",

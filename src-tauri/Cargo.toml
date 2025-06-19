@@ -1,6 +1,6 @@
 [package]
 name = "SlyshMeFX"
-version = "0.2.1"
+version = "0.2.4"
 description = "SlyshMeFX is a system-wide audio visualiser and equaliser."
 authors = ["VioPaige"]
 license = "GPLv3"
@@ -22,7 +22,7 @@ serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "2.0.0-rc.6", features = ["tray-icon", "image-png"] }
 # tauri-plugin-wallpaper = { path = "../../tauri-plugin-wallpaper" }
-tauri-plugin-wallpaper = "2.0.2"
+tauri-plugin-wallpaper = { git = "https://github.com/VioPaige/tauri-plugin-wallpaper.git" }
 wallpaper = "3.2.0"
 audioviz = "0.6.0"
 wasapi = "0.15.0"

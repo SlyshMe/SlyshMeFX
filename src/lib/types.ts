@@ -26,3 +26,5 @@ export interface VisualiserSettings {
 
 export type EqualiserSettings = [EqualiserChannelSettings, EqualiserChannelSettings];
 export type Configs = [EqualiserSettings, VisualiserSettings];
+
+export type CanvasPosition = [{ x: number, y: number }, { width: number, height: number }];

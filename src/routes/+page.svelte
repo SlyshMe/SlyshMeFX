@@ -4,7 +4,7 @@
 
     import wallpaper from "tauri-plugin-wallpaper";
 
-    import type { BackgroundElements, Configs, VisualiserSettings } from "$lib/types";
+    import type { BackgroundElements, CanvasPosition, Configs, VisualiserSettings } from "$lib/types";
 
     let elements: BackgroundElements = {
         canvas: null,
@@ -20,6 +20,10 @@
         resolution: 128,
         screen: undefined,
     });
+    let canvasPos: CanvasPosition = $state([
+        { x: 0, y: 0 },
+        { width: window.innerWidth, height: window.innerHeight },
+    ]);
     listen(`visualiserUpdate`, (e: Event<String>) => settings = JSON.parse(e.payload.toString()));
     
     invoke(`getConfigs`).then((e) => {
@@ -36,12 +40,12 @@
     listen(`startScreenChange`, (e: Event<string | null>) => {
         if (!e.payload) return;
 
-        wallpaper.detach();
+        invoke(`setMonitor`, { monitorName: e.payload }).catch(console.log);
+    });
+    listen(`setCanvasPosition`, (e: Event<Array<string>>) => {
+        if (!e.payload) return;
 
-        // console.log(`setting monitor to ${e.payload}`)
-        invoke(`setMonitor`, { monitorName: e.payload }).then(() => {
-            wallpaper.attach();
-        }).catch(console.log);
+        canvasPos = [JSON.parse(e.payload[0]), JSON.parse(e.payload[1])];
     });
     
     const prepCanvas = (canvas: HTMLCanvasElement) => {
@@ -93,7 +97,10 @@
         });
 
         let lastFrame: any = null;
+        let highest: number = 1;
         listen(`spectrum`, (e: Event<Array<string>>) => {
+            if (highest > 1) highest -=0.01;
+            
             const data = e.payload.map((f: string) => JSON.parse(f));
             if (data.length === 0) return;
             if (!lastFrame) lastFrame = data;
@@ -106,7 +113,8 @@
             
             let x = 0;
             data.forEach((item, index) => {
-                let barHeight = (.1 + item.volume) * canvas.height * .8;
+                if (item.volume > highest) highest = item.volume;
+                let barHeight = (.1 + (item.volume / highest)) * canvas.height * .8;
 
                 ctx.lineTo(x, canvas.height - barHeight);
                 ctx.lineTo(x + (canvas.width / data.length * 1.1), canvas.height - barHeight);
@@ -133,7 +141,7 @@
 
 <div>
     <img bind:this={elements.image} style="display: {settings.useDesktopBackground ? `block` : `none`};" alt="">
-    <canvas bind:this={elements.canvas} id="visualiser"></canvas>
+    <canvas style="top: {canvasPos[0].y}px; left: {canvasPos[0].x}px; width: {canvasPos[1].width}px; height: {canvasPos[1].height}px;" bind:this={elements.canvas} id="visualiser"></canvas>
 </div>
 
 <style>
@@ -166,13 +174,8 @@
 
     canvas {
         position: absolute;
-        top: 0;
-        left: 0;
+
         z-index: 2;
-
-        width: 100vw;
-        height: 100vh;
-
         overflow: hidden;
 
         background-color: #0000;

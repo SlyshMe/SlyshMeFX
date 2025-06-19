@@ -1,8 +1,9 @@
 use std::{fs, process::Command, sync::atomic::Ordering, thread};
-use tauri::{AppHandle, Emitter, Manager, Position, Size};
+use tauri::{AppHandle, Emitter, Manager, PhysicalPosition};
 
-use crate::structs::{AppConfig, EqualiserSettings, VisualiserSettings};
+use crate::{structs::{AppConfig, EqualiserSettings, VisualiserSettings}};
 use super::util::audioCapture;
+use tauri_plugin_wallpaper::{AttachRequest, WallpaperExt};
 
 
 
@@ -80,10 +81,18 @@ pub fn setMonitor(appHandle: AppHandle, monitorName: String) -> Result<(), Strin
     
     if let Some(monitor) = monitors.iter().find(|m| *m.name().unwrap_or(&"".to_string()) == monitorName) {
         let mainWindow = appHandle.get_webview_window("main").unwrap();
-        mainWindow.set_position(Position::Physical(*monitor.position())).expect("Failed to set window position.");
-        mainWindow.set_size(Size::Physical(*monitor.size())).expect("Failed to set window size");
 
-        println!("Position is now: {:?}, Size: {:?}", mainWindow.outer_position(), mainWindow.outer_size());
+        if !crate::IS_ATTACHED.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst).is_err() {
+            appHandle.wallpaper().attach(AttachRequest { window_label: "main".to_string() }).unwrap();
+        }
+
+        appHandle.emit("setCanvasPosition", (
+            serde_json::to_string(&PhysicalPosition {
+                x: monitor.position().x - mainWindow.outer_position().unwrap().x,
+                y: monitor.position().y - mainWindow.outer_position().unwrap().y,
+            }).unwrap(), 
+            serde_json::to_string(&monitor.size()).unwrap())
+        ).unwrap();
     } else {
         return Err("Monitor not found".into());
     }
